@@ -92,7 +92,7 @@ public class AuthService {
 
         // Retrieve the user by email from the database, or throw an exception if not found
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));
-            
+                
         /* Verify the provided password against the stored hashed password using PasswordEncoder.
          *If the passwords do not match, throw an exception.
         */
@@ -101,7 +101,7 @@ public class AuthService {
         }
 
         // Generate a JWT token for the authenticated user
-        String token = jwtUtil.generateToken(user.getEmail());
+        String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
 
         // Return a LoginResponse with the user's details and the generated token
         return new LoginResponse(
