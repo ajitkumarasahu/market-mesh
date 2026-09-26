@@ -14,6 +14,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.http.HttpMethod;
 
 @Configuration
 @RequiredArgsConstructor
@@ -29,10 +30,12 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-
                 // register/login stay open (no auth required or token required)
                 .requestMatchers("/api/auth/**").permitAll() 
-
+                // anyone can browse
+                .requestMatchers(HttpMethod.GET, "/api/categories/**", "/api/products/**").permitAll() 
+                // only admin can create/update/delete
+                .requestMatchers("/api/categories/**", "/api/products/**").hasRole("ADMIN")
                 //every other endpoint now requires a valid Bearer token.
                 .anyRequest().authenticated() 
             )
