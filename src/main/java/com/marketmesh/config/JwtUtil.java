@@ -26,16 +26,22 @@ public class JwtUtil {
     /*after a successful login, this creates a signed string (the JWT) 
     *containing the user's email and an expiry time. 
     */
-    public String generateToken(String email) {
+    public String generateToken(String email, String role) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expiration);
 
         return Jwts.builder()
             .subject(email)
+            .claim("role", role) // embed role inside the token
             .issuedAt(now)
             .expiration(expiryDate)
             .signWith(getSigningKey(), SignatureAlgorithm.HS256)
             .compact();
+    }
+
+    // Add this new method too
+    public String extractRole(String token) {
+        return getClaims(token).get("role", String.class);
     }
 
     /*given a token from an incoming request, pulls out which user it belongs to. */
