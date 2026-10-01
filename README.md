@@ -122,6 +122,17 @@ Every endpoint returns a consistent wrapper shape via `ApiResponse<T>`:
 | PUT | `/api/categories/{id}` | ADMIN | Update category |
 | DELETE | `/api/categories/{id}` | ADMIN | Delete category |
 
+### Product
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| POST | `/api/products` | ADMIN | Create product (with image URLs) |
+| GET | `/api/products` | Public | List all products |
+| GET | `/api/products?categoryId={id}` | Public | Filter products by category |
+| GET | `/api/products?keyword={text}` | Public | Search products by name |
+| GET | `/api/products/{id}` | Public | Get one product |
+| PUT | `/api/products/{id}` | ADMIN | Update product (images fully replaced) |
+| DELETE | `/api/products/{id}` | ADMIN | Delete product |
+
 ---
 
 ## Setup Instructions
@@ -160,7 +171,6 @@ Every endpoint returns a consistent wrapper shape via `ApiResponse<T>`:
 
 ## What's NOT built yet (upcoming work)
 
-- Product Service + Controller (with image handling)
 - Cart Service + Controller (add/remove/update items)
 - Order Service + Controller (Cart → Order conversion, stock deduction)
 - Payment integration (mock gateway to start)
@@ -175,4 +185,6 @@ Every endpoint returns a consistent wrapper shape via `ApiResponse<T>`:
 
 - Passwords are **never** returned in any API response — only hashes are stored, and even those never leave the server.
 - `discountPrice` on Product is nullable — absence means "no discount," not zero.
-- All DTOs are hand-written (no auto-mapping library like MapStruct) — entity ↔ DTO conversion is done manually inside each Service class (see `CategoryService.toResponse()` as the pattern to follow for Product, Cart, Order next).
+- All DTOs are hand-written (no auto-mapping library like MapStruct) — entity ↔ DTO conversion is done manually inside each Service class (see `CategoryService.toResponse()` / `ProductService.toResponse()` as the pattern to follow for Cart, Order next).
+- Product images are stored as plain URL strings (no file upload/cloud storage) — matches the earlier decision to keep image handling simple for v1.
+- `ProductService.update()` fully replaces the image list on every update rather than diffing add/remove — simplest correct behavior for now; revisit only if the frontend needs partial image edits.
