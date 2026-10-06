@@ -29,4 +29,9 @@ public class ApiResponse<T> {
     public static <T> ApiResponse<T> error(String message, T data) {
         return new ApiResponse<>(false, message, null);
     }
+
+    // Add this alongside the existing success() and error() methods
+    public static <T> ApiResponse<T> fail(String message, T data) {
+        return new ApiResponse<>(false, message, data);
+    }
 }
