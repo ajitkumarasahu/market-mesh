@@ -29,7 +29,7 @@ com.marketmesh
  ├── address         Address entity, AddressRepository
  ├── category        Category entity (self-referencing), Repository, Service, Controller, dto/
  ├── product         Product, ProductImage entities, ProductRepository
- ├── cart            Cart, CartItem entities, repositories
+ ├── cart            Cart, CartItem entities, repositories, CartService, CartController, dto/
  ├── order           Order, OrderItem entities, OrderStatus enum, repositories
  ├── payment         Payment entity, PaymentStatus enum, PaymentRepository
  ├── auth            AuthService, AuthController, dto/ (Register & Login request/response)
@@ -82,7 +82,8 @@ com.marketmesh
 | `/api/auth/**` | Public (no token required) |
 | `GET /api/categories/**`, `GET /api/products/**` | Public (anyone can browse) |
 | `POST/PUT/DELETE /api/categories/**`, `/api/products/**` | `ADMIN` only |
-| Everything else (cart, orders, etc.) | Any authenticated `USER` |
+| `/api/cart/**` | Any authenticated user (works only on their own cart, identified from the JWT) |
+| Everything else | Any authenticated user |
 
 To promote a user to admin (no admin UI yet — do this directly in MySQL):
 ```sql
@@ -133,6 +134,17 @@ Every endpoint returns a consistent wrapper shape via `ApiResponse<T>`:
 | PUT | `/api/products/{id}` | ADMIN | Update product (images fully replaced) |
 | DELETE | `/api/products/{id}` | ADMIN | Delete product |
 
+### Cart (any logged-in user)
+The cart always belongs to the user identified by the JWT token. The client never sends a user ID.
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/cart` | View my cart (auto-created on first use) |
+| POST | `/api/cart/items` | Add a product: `{ "productId": 1, "quantity": 2 }` (adding the same product again increases its quantity) |
+| PUT | `/api/cart/items/{itemId}` | Change quantity: `{ "quantity": 5 }` |
+| DELETE | `/api/cart/items/{itemId}` | Remove one item |
+| DELETE | `/api/cart` | Clear the whole cart |
+
 ---
 
 ## Setup Instructions
@@ -171,7 +183,6 @@ Every endpoint returns a consistent wrapper shape via `ApiResponse<T>`:
 
 ## What's NOT built yet (upcoming work)
 
-- Cart Service + Controller (add/remove/update items)
 - Order Service + Controller (Cart → Order conversion, stock deduction)
 - Payment integration (mock gateway to start)
 - Global exception handler (`@ControllerAdvice`) — currently errors return raw `500`/`403` without clean JSON error bodies
@@ -188,3 +199,6 @@ Every endpoint returns a consistent wrapper shape via `ApiResponse<T>`:
 - All DTOs are hand-written (no auto-mapping library like MapStruct) — entity ↔ DTO conversion is done manually inside each Service class (see `CategoryService.toResponse()` / `ProductService.toResponse()` as the pattern to follow for Cart, Order next).
 - Product images are stored as plain URL strings (no file upload/cloud storage) — matches the earlier decision to keep image handling simple for v1.
 - `ProductService.update()` fully replaces the image list on every update rather than diffing add/remove — simplest correct behavior for now; revisit only if the frontend needs partial image edits.
+- Cart endpoints read the caller's identity from `Authentication.getName()` (the email stored in the JWT), never from the request body, so one user can never read or change another user's cart.
+- `CartItem.price` is a snapshot taken when the item is added (the discount price if one exists, otherwise the normal price), so later price changes don't silently alter carts.
+- Stock is only validated when adding or updating cart items. It is actually deducted when an order is placed.
