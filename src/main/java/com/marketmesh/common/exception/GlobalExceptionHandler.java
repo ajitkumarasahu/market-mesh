@@ -1,5 +1,6 @@
 package com.marketmesh.common.exception;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import com.marketmesh.common.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import java.util.stream.Collectors;
 
 /**
  * Global exception handler for the application.
@@ -93,5 +96,23 @@ public class GlobalExceptionHandler {
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(ApiResponse.fail("Something went wrong. Please try again later.", null));
+    }
+
+
+    // "Product not found", "Your cart is empty", "Not enough stock", "Invalid email or password", etc.
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiResponse<Void>> handleBadRequest(IllegalArgumentException ex) {
+        return ResponseEntity
+           .status(HttpStatus.BAD_REQUEST)
+           .body(ApiResponse.fail(ex.getMessage(), null));
+    }
+
+    // Deleting a record that other tables still reference (e.g. a product inside an order),
+    // or inserting a duplicate unique value
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleConflict(DataIntegrityViolationException ex) {
+        return ResponseEntity
+            .status(HttpStatus.CONFLICT)
+            .body(ApiResponse.fail(ex.getMessage(), null));
     }
 }
