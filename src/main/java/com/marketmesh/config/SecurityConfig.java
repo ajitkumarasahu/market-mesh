@@ -37,6 +37,7 @@ public class SecurityConfig {
                 // only admin can create/update/delete
                 .requestMatchers("/api/categories/**", "/api/products/**").hasRole("ADMIN")
                 //every other endpoint now requires a valid Bearer token.
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated() 
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
