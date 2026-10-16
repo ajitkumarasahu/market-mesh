@@ -100,12 +100,12 @@ public class GlobalExceptionHandler {
 
 
     // "Product not found", "Your cart is empty", "Not enough stock", "Invalid email or password", etc.
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiResponse<Void>> handleBadRequest(IllegalArgumentException ex) {
-        return ResponseEntity
-           .status(HttpStatus.BAD_REQUEST)
-           .body(ApiResponse.fail(ex.getMessage(), null));
-    }
+    // @ExceptionHandler(IllegalArgumentException.class)
+    // public ResponseEntity<ApiResponse<Void>> handleBadRequest(IllegalArgumentException ex) {
+    //     return ResponseEntity
+    //        .status(HttpStatus.BAD_REQUEST)
+    //        .body(ApiResponse.fail(ex.getMessage(), null));
+    // }
 
     // Deleting a record that other tables still reference (e.g. a product inside an order),
     // or inserting a duplicate unique value
